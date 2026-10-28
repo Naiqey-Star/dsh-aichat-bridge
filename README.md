@@ -23,7 +23,7 @@
                                                    └─ 把最后的 assistant 文本包成 chat.completion 返回
 ```
 
-- 一次请求 = 一个完整的 agent 轮次：开始前打开会话，结束后立刻释放，所以空闲时你可以在 DSH 界面里打开同一个会话，不冲突。
+- 一次请求 = 一个完整的 agent 轮次；**会话在轮次结束后保持活动**，所以它一直出现在 DSH 侧边栏里，点开就能看历史，也可以直接在那边发消息（和游戏共用同一个上下文）。
 - 系统提示词用 `complete: true` 的段落整段替换，**DSH 的人设、编码助手框架不会混进来**；工具说明由桥接自己补一小段。
 - 文件能力不依赖 DSH 的内置文件工具（那些是预设作用域内的），而是桥接自己注册一个 `read_file` 工具，只认 `readRoots` 里的目录。
 
@@ -64,7 +64,7 @@ curl http://127.0.0.1:<DSH 端口>/aichat/health
 ```
 
 ```json
-{"ok":true,"service":"dsh-aichat-bridge","sessionId":"aichat-bridge","provider":"deepseek-account","model":"deepseek-flash","readRoots":["D:\\我的资料"]}
+{"ok":true,"service":"dsh-aichat-bridge","version":"0.1.0","sessionId":"aichat-bridge","provider":"deepseek-account","model":"deepseek-flash","readRoots":["D:\\我的资料"],"listenPort":47821,"cwd":"D:\\DSH_WORK","agentLive":true}
 ```
 
 ### 为什么还要一个固定端口
@@ -154,7 +154,7 @@ DSH 把会话按**项目目录**分组存放（`sessions/<项目>/<会话>`）�
 
 ## 已知限制
 
-- **同一会话同时只能有一个写者**：你正在 DSH 界面里跟这个会话聊天时，桥接会返回 `409 SESSION_IN_USE`，关掉那个会话再试即可。
+- **同一会话同时只能有一个写者**：桥接持有活动会话期间，如果另一个 DSH 实例或进程也想 resume 它，会返回 `409 SESSION_IN_USE`；在同一个界面里打开、发消息不受影响。
 - **不支持流式**：客户端传 `stream: true` 会收到一次性 JSON，AIChat 本身不用流式。
 - **不合并多轮历史**：AIChat 每次都把记忆塞进 user 消息，桥接按「一次请求一轮」处理，不额外拼接历史。
 - 会话标题、用量、历史都归 DSH 管理，桥接只负责搬运。

@@ -1,6 +1,6 @@
 {
   "name": "dsh-aichat-bridge",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "OpenAI-compatible bridge that lets an in-game chat mod talk to a DeepSeek Harness session: the mod's persona wins, and the agent can read files on this machine.",
   "type": "module",
   "main": "lib/index.js",

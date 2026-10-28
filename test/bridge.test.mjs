@@ -59,7 +59,9 @@ class FakeAgent {
 
 /** Boot the plugin against a stub context and return what it registered. */
 function boot(config, overrides = {}) {
-  const captured = { route: undefined, section: undefined, tool: undefined };
+  const captured = { route: undefined, section: undefined, tool: undefined, creates: 0, disposes: 0 };
+
+  let liveAgent;
 
   const ctx = {
     logger: { info() {}, warn() {}, error() {} },
@@ -76,18 +78,26 @@ function boot(config, overrides = {}) {
       },
     },
     agents: {
-      get: () => undefined,
+      get: () => liveAgent,
       resume: async () => {
         throw new Error('no stored session');
       },
       create: async (options) => {
+        captured.creates += 1;
         options.setup({
           systemPrompt: { section: (value) => (captured.section = value) },
           tools: { register: (value) => (captured.tool = value) },
         });
         const agent = overrides.agentFactory === undefined ? new FakeAgent() : overrides.agentFactory();
         captured.agent = agent;
-        return { agent, dispose: async () => {} };
+        liveAgent = agent;
+        return {
+          agent,
+          dispose: async () => {
+            captured.disposes += 1;
+            if (liveAgent === agent) liveAgent = undefined;
+          },
+        };
       },
       ...overrides.agents,
     },
@@ -155,7 +165,7 @@ test('rejects a wrong bearer token and reports health without one', async () => 
     const info = await health.json();
     assert.equal(info.ok, true);
     assert.equal(info.sessionId, 'aichat-bridge');
-    assert.equal(info.version, '0.1.0');
+    assert.equal(info.version, '0.1.1');
   } finally {
     await server.close();
   }
@@ -261,6 +271,20 @@ test('cancels the in-flight turn when the client hangs up', async () => {
     });
     await new Promise((resolve) => setTimeout(resolve, 60));
     assert.equal(cancelled, true);
+  } finally {
+    await server.close();
+  }
+});
+test('reuses the live agent across turns instead of recreating it', async () => {
+  const captured = boot({});
+  const server = await serve(captured.route);
+  try {
+    for (const text of ['第一句', '第二句']) {
+      const response = await chat(server.origin, { messages: [{ role: 'user', content: text }] });
+      assert.equal(response.status, 200);
+    }
+    assert.equal(captured.creates, 1);
+    assert.equal(captured.disposes, 0);
   } finally {
     await server.close();
   }
