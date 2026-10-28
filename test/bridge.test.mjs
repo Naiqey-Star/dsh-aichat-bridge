@@ -165,7 +165,7 @@ test('rejects a wrong bearer token and reports health without one', async () => 
     const info = await health.json();
     assert.equal(info.ok, true);
     assert.equal(info.sessionId, 'aichat-bridge');
-    assert.equal(info.version, '0.1.3');
+    assert.equal(info.version, '0.1.4');
   } finally {
     await server.close();
   }
