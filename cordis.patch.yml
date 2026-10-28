@@ -25,5 +25,9 @@
         # Fixed loopback port for clients that cannot follow the harness port.
         # 0 disables the extra listener.
         listenPort: 47821
+        # Project directory recorded in the session header. The GUI lists sessions
+        # per project, so a session created without it lands in _no-cwd and stays
+        # invisible in the sidebar. Empty = the harness working-directory default.
+        cwd: ""
         # Optional NDJSON trace file for diagnosing a turn.
         debugLog: ""
