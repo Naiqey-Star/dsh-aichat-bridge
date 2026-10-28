@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "AIChat 桥接",
+    "description": "把一个 DSH 会话暴露成 OpenAI 兼容接口，让游戏内的聊天 Mod 直接用上它：人设仍由 Mod 决定，文件只能读你允许的目录。"
+  }
+}

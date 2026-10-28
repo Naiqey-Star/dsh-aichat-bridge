@@ -1,0 +1,26 @@
+# Bundle patch for dsh-aichat-bridge.
+# Install this package into a dsh profile and the loader applies this row.
+# Edit the `config` below (or leave it out) to change the bridge settings.
+- insert:
+    - id: aichat-bridge
+      name: dsh-aichat-bridge
+      config:
+        # HTTP prefix served on the harness web server (127.0.0.1 only).
+        path: /aichat
+        # Bearer token the client must present. Empty = no auth (loopback only).
+        token: ""
+        # Session the bridge writes into. Keep it stable so the session is the
+        # same "channel" every time; it shows up in the GUI session list.
+        sessionId: aichat-bridge
+        # Provider / model used for bridge turns.
+        provider: deepseek-account
+        model: deepseek-flash
+        # Absolute directories the model may read with the read_file tool.
+        # Leave empty to disable file access entirely.
+        readRoots: []
+        # Refuse files larger than this many bytes.
+        maxReadBytes: 200000
+        # Hard ceiling for one turn.
+        timeoutMs: 180000
+        # Optional NDJSON trace file for diagnosing a turn.
+        debugLog: ""

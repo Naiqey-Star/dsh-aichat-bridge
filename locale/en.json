@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "AIChat Bridge",
+    "description": "Expose one DSH session as an OpenAI-compatible endpoint so an in-game chat mod can use it, keeping the mod's persona and reading only the folders you allow."
+  }
+}
