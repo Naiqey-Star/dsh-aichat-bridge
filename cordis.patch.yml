@@ -22,5 +22,8 @@
         maxReadBytes: 200000
         # Hard ceiling for one turn.
         timeoutMs: 180000
+        # Fixed loopback port for clients that cannot follow the harness port.
+        # 0 disables the extra listener.
+        listenPort: 47821
         # Optional NDJSON trace file for diagnosing a turn.
         debugLog: ""

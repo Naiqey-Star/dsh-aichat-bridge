@@ -67,6 +67,31 @@ curl http://127.0.0.1:<DSH 端口>/aichat/health
 {"ok":true,"service":"dsh-aichat-bridge","sessionId":"aichat-bridge","provider":"deepseek-account","model":"deepseek-flash","readRoots":["D:\\我的资料"]}
 ```
 
+### 为什么还要一个固定端口
+
+DSH 桌面端每次启动的 Web 端口可能不同（实测换过一次），如果客户端写死「DSH 当前端口」，重启后就会连到正在退出的旧实例上——表现就是 `502 Bad Gateway`。
+
+所以插件默认**另外监听一个固定的回环端口** `47821`，游戏端永远连这个地址：
+
+```
+http://127.0.0.1:47821/aichat/v1/chat/completions
+```
+
+`listenPort: 0` 可以关掉它，只保留 DSH 自身 Web 端口上的路由（`http://127.0.0.1:<DSH 端口>/aichat/...`）。
+
+### 本地开发：不进 node_modules 的加载方式
+
+把包手工拷进 `profiles/<名称>/node_modules` 是不持久的：DSH 重启或装插件时会按 `package.json` 重新 pnpm install，多余目录会被清掉（实测发生过）。要么正式 `dsh plugin add`，要么在补丁行里直接写文件 URL：
+
+```yaml
+- insert:
+    - id: aichat-bridge
+      name: file:///D:/path/to/dsh-aichat-bridge/lib/index.js
+      config: { ... }
+```
+
+这样加载器按绝对路径 import，pnpm 清理不会影响它。
+
 ## 配置
 
 | 字段 | 默认 | 说明 |

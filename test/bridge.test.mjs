@@ -66,6 +66,9 @@ function boot(config, overrides = {}) {
     effect(fn) {
       fn();
     },
+    inject(deps, callback) {
+      callback(ctx);
+    },
     webServer: {
       register(route) {
         captured.route = route;
@@ -90,13 +93,15 @@ function boot(config, overrides = {}) {
     },
   };
 
-  apply(ctx, config);
+  // Every test drives the handler directly; never bind a real socket.
+  apply(ctx, { listenPort: 0, ...config });
   return captured;
 }
 
 async function serve(route) {
   const server = createServer((req, res) => {
-    route.handler(req, res).catch(() => res.destroy());
+    const pending = route.handler(req, res);
+    if (pending !== undefined && typeof pending.catch === 'function') pending.catch(() => res.destroy());
   });
   await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
   const { port } = server.address();
