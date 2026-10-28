@@ -38,5 +38,13 @@
   "engines": {
     "node": ">=20"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Naiqey-Star/dsh-aichat-bridge.git"
+  },
+  "homepage": "https://github.com/Naiqey-Star/dsh-aichat-bridge#readme",
+  "bugs": {
+    "url": "https://github.com/Naiqey-Star/dsh-aichat-bridge/issues"
+  },
   "license": "MIT"
 }

@@ -1,4 +1,6 @@
 # dsh-aichat-bridge
+  
+[![GitHub](https://img.shields.io/badge/GitHub-Naiqey--Star%2Fdsh--aichat--bridge-181717?logo=github)](https://github.com/Naiqey-Star/dsh-aichat-bridge)
 
 把一个 **DeepSeek Harness（DSH）会话** 暴露成 **OpenAI 兼容接口**，让游戏里的聊天 Mod（例如 Chill With You 的 AIChat）可以直接把对话交给 DSH 处理。
 
