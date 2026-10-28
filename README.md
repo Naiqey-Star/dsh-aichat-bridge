@@ -102,7 +102,9 @@ http://127.0.0.1:47821/aichat/v1/chat/completions
 | `token` | `""` | 客户端要带的 Bearer 口令；空 = 不校验。建议设置，避免本机其他程序误用 |
 | `sessionId` | `aichat-bridge` | 固定会话 id，就是这个「频道」；在 DSH 会话列表里可见 |
 | `provider` / `model` | `deepseek-account` / `deepseek-flash` | 桥接轮次使用的模型路由 |
-| `readRoots` | `[]` | 允许 `read_file` 读取的绝对目录；空 = 完全不给文件能力 |
+| `readRoots` | `[]` | 允许 `read_file` 读取的绝对目录（可列多个） |
+| `allowAllDrives` | `false` | `true` = 本机所有可见磁盘都可读（只读），仍受 `denyPaths` 限制 |
+| `denyPaths` | `[]` | 明确排除的目录，优先于上面两项 |
 | `maxReadBytes` | `200000` | 单文件大小上限，超过直接拒绝 |
 | `listenPort` | `47821` | 固定回环端口；`0` 表示只保留 DSH 自身 Web 端口上的路由 |
 | `cwd` | 空（用 DSH 默认工作目录） | 写进会话头的项目目录；空着会让会话落到 `_no-cwd`，侧边栏看不到 |
@@ -147,6 +149,32 @@ http://127.0.0.1:47821/aichat/v1/chat/completions
 - `read_file` 在 `readRoots` 内做 `realpath` 解析后再比对，`..`、符号链接都逃不出去；只读，不提供写入/删除/执行命令的能力。
 - 桥接不申请审批：一旦某次工具调用需要人工确认，就会一直卡住到超时，所以默认能力刻意收窄到只读。
 - 建议设置 `token`：本机任何进程都能访问回环端口。
+
+### 怎么放开更多目录 / 全盘只读
+
+默认什么都不给。按需开放，有两种写法：
+
+```yaml
+# 1) 精确列出想要的目录
+readRoots:
+  - D:/图片
+  - C:/Users/PC/Documents
+  - E:/参考资料
+
+# 2) 干脆全盘只读，再排除敏感目录
+allowAllDrives: true
+denyPaths:
+  - C:/Users/PC/.ssh
+  - C:/Users/PC/.dsh
+  - C:/Users/PC/AppData/Roaming/@deepseek-ai
+```
+
+几点说明：
+
+- 全盘只读包含所有**当前可见**的磁盘根（C:\、D:\ …）；离线/未挂载的盘不会自动纳入，挂上后重新加载插件即可。
+- `denyPaths` 先于 `readRoots` 判断，被排除的路径连 `realpath` 之后的比对也逃不掉。
+- 能力仍然只有「读文本文件」：不写、不删、不执行命令。单个文件默认上限 200 KB，可用 `maxReadBytes` 调整。
+- **隐私提醒**：开放全盘等于把机器上所有可读文本都暴露给模型（包括各种配置和日志）。只想让它看资料的话，用第 1 种写法更安全。
 
 ### 为什么侧边栏里看不到会话
 

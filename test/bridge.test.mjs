@@ -7,7 +7,7 @@
  */
 
 import assert from 'node:assert/strict';
-import { mkdtempSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createServer, request } from 'node:http';
@@ -165,7 +165,7 @@ test('rejects a wrong bearer token and reports health without one', async () => 
     const info = await health.json();
     assert.equal(info.ok, true);
     assert.equal(info.sessionId, 'aichat-bridge');
-    assert.equal(info.version, '0.1.2');
+    assert.equal(info.version, '0.1.3');
   } finally {
     await server.close();
   }
@@ -288,4 +288,22 @@ test('reuses the live agent across turns instead of recreating it', async () => 
   } finally {
     await server.close();
   }
+});
+test('denyPaths wins over an allowed root', async () => {
+  const root = mkdtempSync(join(tmpdir(), 'aichat-deny-'));
+  const blocked = join(root, 'private');
+  mkdirSync(blocked);
+  writeFileSync(join(blocked, 'secret.txt'), 'nope', 'utf8');
+  writeFileSync(join(root, 'ok.txt'), 'fine', 'utf8');
+
+  const captured = boot({ readRoots: [root], denyPaths: [blocked] });
+  const server = await serve(captured.route);
+  try {
+    await chat(server.origin, { messages: [{ role: 'user', content: 'hi' }] });
+  } finally {
+    await server.close();
+  }
+
+  assert.equal(await captured.tool.execute({ path: join(root, 'ok.txt') }), 'fine');
+  await assert.rejects(() => captured.tool.execute({ path: join(blocked, 'secret.txt') }), /被排除/);
 });
